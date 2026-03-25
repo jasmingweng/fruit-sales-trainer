@@ -1,0 +1,1659 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>🍎 鲜果门店销售AI陪练系统</title>
+<style>
+  :root {
+    --primary: #E65100;
+    --primary-light: #FF8A50;
+    --primary-dark: #BF360C;
+    --accent: #43A047;
+    --accent-light: #81C784;
+    --yellow: #FFB300;
+    --bg: #FFF8F5;
+    --card: #FFFFFF;
+    --text: #2D2D2D;
+    --text-light: #666;
+    --border: #F0E0D8;
+    --shadow: 0 2px 12px rgba(230,81,0,0.10);
+    --radius: 14px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    font-family: -apple-system, 'PingFang SC', 'Microsoft YaHei', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    background: linear-gradient(135deg, var(--primary) 0%, #FF6D3A 60%, var(--yellow) 100%);
+    color: white;
+    padding: 28px 24px 20px;
+    text-align: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .header::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.06'%3E%3Ccircle cx='30' cy='30' r='20'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+  }
+  .header-emoji { font-size: 48px; display: block; margin-bottom: 8px; }
+  .header h1 { font-size: 22px; font-weight: 700; letter-spacing: 1px; position: relative; }
+  .header p { font-size: 13px; opacity: 0.9; margin-top: 6px; position: relative; }
+
+  /* Nav Tabs */
+  .nav-tabs {
+    display: flex;
+    background: white;
+    border-bottom: 2px solid var(--border);
+    overflow-x: auto;
+    scrollbar-width: none;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.06);
+  }
+  .nav-tabs::-webkit-scrollbar { display: none; }
+  .nav-tab {
+    flex: 0 0 auto;
+    padding: 14px 18px;
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--text-light);
+    cursor: pointer;
+    border-bottom: 3px solid transparent;
+    white-space: nowrap;
+    transition: all 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .nav-tab:hover { color: var(--primary); background: #FFF3EE; }
+  .nav-tab.active { color: var(--primary); border-bottom-color: var(--primary); background: #FFF3EE; }
+
+  /* Page Content */
+  .page { display: none; padding: 16px; max-width: 800px; margin: 0 auto; }
+  .page.active { display: block; }
+
+  /* Cards */
+  .card {
+    background: var(--card);
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-bottom: 16px;
+    box-shadow: var(--shadow);
+    border: 1px solid var(--border);
+  }
+  .card-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--primary-dark);
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  /* Section Headers */
+  .section-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    padding: 5px 14px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    margin-bottom: 14px;
+  }
+
+  /* Knowledge Items */
+  .knowledge-block {
+    background: #FFF8F5;
+    border-left: 4px solid var(--primary);
+    border-radius: 0 10px 10px 0;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .knowledge-block h4 { font-size: 14px; font-weight: 700; color: var(--primary-dark); margin-bottom: 8px; }
+  .knowledge-block p, .knowledge-block li { font-size: 13px; line-height: 1.8; color: var(--text); }
+  .knowledge-block ul { padding-left: 18px; }
+
+  .tip-box {
+    background: linear-gradient(135deg, #E8F5E9, #F1F8E9);
+    border: 1px solid #A5D6A7;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #2E7D32;
+  }
+  .tip-box strong { color: var(--accent); }
+
+  .warning-box {
+    background: #FFF3E0;
+    border: 1px solid #FFCC80;
+    border-radius: 10px;
+    padding: 12px 16px;
+    margin-top: 10px;
+    font-size: 13px;
+    color: #E65100;
+  }
+
+  /* Script Lines */
+  .script-line {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 10px;
+    align-items: flex-start;
+  }
+  .script-role {
+    flex: 0 0 56px;
+    font-size: 11px;
+    font-weight: 700;
+    padding: 4px 8px;
+    border-radius: 12px;
+    text-align: center;
+    line-height: 1.4;
+    margin-top: 2px;
+  }
+  .role-staff { background: #FFE0CC; color: #BF360C; }
+  .role-customer { background: #E3F2FD; color: #1565C0; }
+  .role-note { background: #F3E5F5; color: #6A1B9A; font-style: italic; font-size: 11px; }
+  .script-text { flex: 1; font-size: 13px; line-height: 1.7; padding: 8px 12px; border-radius: 10px; background: #FAFAFA; border: 1px solid #EEE; }
+
+  /* Simulation */
+  .sim-header {
+    background: linear-gradient(135deg, var(--primary-dark), var(--primary));
+    color: white;
+    border-radius: var(--radius) var(--radius) 0 0;
+    padding: 16px 20px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .sim-header .customer-avatar {
+    width: 44px; height: 44px;
+    background: rgba(255,255,255,0.2);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 24px;
+  }
+  .sim-header-info h3 { font-size: 15px; font-weight: 700; }
+  .sim-header-info p { font-size: 12px; opacity: 0.85; margin-top: 3px; }
+
+  .chat-area {
+    background: #F5F5F5;
+    min-height: 300px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 16px;
+    border-left: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+  }
+  .chat-bubble {
+    max-width: 80%;
+    padding: 10px 14px;
+    border-radius: 14px;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 10px;
+    animation: fadeIn 0.3s ease;
+  }
+  @keyframes fadeIn { from { opacity:0; transform: translateY(4px); } to { opacity:1; transform: translateY(0); } }
+  .bubble-customer {
+    background: white;
+    color: var(--text);
+    border-radius: 4px 14px 14px 14px;
+    border: 1px solid #DDD;
+    margin-right: auto;
+  }
+  .bubble-staff {
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border-radius: 14px 4px 14px 14px;
+    margin-left: auto;
+  }
+  .bubble-system {
+    background: #FFF9C4;
+    color: #6D4C41;
+    border: 1px dashed #FFD54F;
+    border-radius: 10px;
+    font-size: 12px;
+    margin: 0 auto 10px;
+    text-align: center;
+    padding: 8px 12px;
+  }
+  .bubble-coach {
+    background: #E8F5E9;
+    color: #2E7D32;
+    border: 1px solid #A5D6A7;
+    border-radius: 10px;
+    font-size: 12px;
+    margin-bottom: 10px;
+    padding: 8px 12px;
+  }
+  .bubble-label { font-size: 11px; opacity: 0.7; margin-bottom: 4px; }
+
+  .sim-input-area {
+    background: white;
+    padding: 12px 16px;
+    border-radius: 0 0 var(--radius) var(--radius);
+    border: 1px solid var(--border);
+    border-top: none;
+  }
+  .sim-input-row {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 10px;
+  }
+  .sim-input {
+    flex: 1;
+    padding: 10px 14px;
+    border: 1.5px solid var(--border);
+    border-radius: 22px;
+    font-size: 13px;
+    outline: none;
+    transition: border 0.2s;
+    font-family: inherit;
+  }
+  .sim-input:focus { border-color: var(--primary); }
+  .btn {
+    padding: 10px 18px;
+    border: none;
+    border-radius: 22px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: inherit;
+  }
+  .btn-primary { background: var(--primary); color: white; }
+  .btn-primary:hover { background: var(--primary-dark); transform: translateY(-1px); }
+  .btn-secondary { background: #F5F5F5; color: var(--text); border: 1px solid #DDD; }
+  .btn-secondary:hover { background: #EEE; }
+  .btn-green { background: var(--accent); color: white; }
+  .btn-green:hover { background: #388E3C; }
+  .btn-small { padding: 7px 14px; font-size: 12px; }
+
+  .quick-replies {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 7px;
+  }
+  .quick-reply {
+    background: #FFF3EE;
+    border: 1px solid var(--primary-light);
+    color: var(--primary-dark);
+    padding: 6px 12px;
+    border-radius: 14px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+    font-weight: 500;
+  }
+  .quick-reply:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+  /* Score Panel */
+  .score-panel {
+    background: linear-gradient(135deg, #1B5E20, #2E7D32);
+    color: white;
+    border-radius: var(--radius);
+    padding: 20px;
+    margin-top: 16px;
+  }
+  .score-title { font-size: 16px; font-weight: 700; margin-bottom: 16px; }
+  .score-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-bottom: 16px; }
+  .score-item { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 12px; }
+  .score-label { font-size: 11px; opacity: 0.8; margin-bottom: 6px; }
+  .score-value { font-size: 22px; font-weight: 800; }
+  .score-bar { height: 6px; background: rgba(255,255,255,0.2); border-radius: 3px; margin-top: 6px; }
+  .score-fill { height: 100%; background: #A5D6A7; border-radius: 3px; transition: width 0.5s ease; }
+  .score-feedback { background: rgba(255,255,255,0.1); border-radius: 10px; padding: 14px; font-size: 13px; line-height: 1.7; }
+
+  /* Scenario Selector */
+  .scenario-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; margin-bottom: 16px; }
+  @media (max-width: 400px) { .scenario-grid { grid-template-columns: 1fr; } }
+  .scenario-card {
+    border: 2px solid var(--border);
+    border-radius: 12px;
+    padding: 16px;
+    cursor: pointer;
+    transition: all 0.2s;
+    text-align: center;
+  }
+  .scenario-card:hover, .scenario-card.active {
+    border-color: var(--primary);
+    background: #FFF3EE;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(230,81,0,0.15);
+  }
+  .scenario-card .s-icon { font-size: 32px; margin-bottom: 8px; }
+  .scenario-card .s-name { font-size: 13px; font-weight: 700; color: var(--text); }
+  .scenario-card .s-desc { font-size: 11px; color: var(--text-light); margin-top: 4px; }
+  .scenario-card .s-diff {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 10px;
+    font-size: 10px;
+    font-weight: 700;
+    margin-top: 6px;
+  }
+  .diff-easy { background: #E8F5E9; color: #2E7D32; }
+  .diff-medium { background: #FFF3E0; color: #E65100; }
+  .diff-hard { background: #FFEBEE; color: #C62828; }
+
+  /* Progress */
+  .progress-bar-wrap { background: #EEE; border-radius: 4px; height: 8px; margin-top: 6px; }
+  .progress-bar-fill { height: 100%; border-radius: 4px; background: linear-gradient(90deg, var(--primary), var(--yellow)); transition: width 0.4s; }
+
+  /* Knowledge Tabs */
+  .k-tabs { display: flex; gap: 8px; margin-bottom: 16px; flex-wrap: wrap; }
+  .k-tab {
+    padding: 8px 16px;
+    border-radius: 20px;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    border: 1.5px solid var(--border);
+    color: var(--text-light);
+    background: white;
+    transition: all 0.2s;
+  }
+  .k-tab.active, .k-tab:hover { background: var(--primary); color: white; border-color: var(--primary); }
+
+  .k-content { display: none; }
+  .k-content.active { display: block; }
+
+  /* Checklist */
+  .checklist { list-style: none; }
+  .checklist li {
+    display: flex; align-items: flex-start; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid #F5F5F5;
+    font-size: 13px;
+    line-height: 1.6;
+  }
+  .checklist li::before { content: '✓'; color: var(--accent); font-weight: 800; flex-shrink: 0; margin-top: 2px; }
+
+  /* Comparison Table */
+  .compare-table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  .compare-table th { background: var(--primary); color: white; padding: 10px 12px; text-align: left; }
+  .compare-table td { padding: 9px 12px; border-bottom: 1px solid #F0F0F0; vertical-align: top; }
+  .compare-table tr:nth-child(even) td { background: #FAFAFA; }
+  .compare-table .bad { color: #C62828; }
+  .compare-table .good { color: #2E7D32; font-weight: 600; }
+
+  /* Status */
+  .status-dot { width: 8px; height: 8px; border-radius: 50%; display: inline-block; margin-right: 6px; }
+  .dot-green { background: var(--accent); }
+  .dot-yellow { background: var(--yellow); }
+  .dot-red { background: #E53935; }
+
+  /* Divider */
+  .divider { height: 1px; background: var(--border); margin: 16px 0; }
+
+  /* Floating coach bubble */
+  #coach-hint {
+    display: none;
+    position: fixed;
+    bottom: 80px;
+    right: 16px;
+    background: white;
+    border: 2px solid var(--accent);
+    border-radius: 14px;
+    padding: 12px 16px;
+    max-width: 260px;
+    font-size: 12px;
+    color: #2E7D32;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.12);
+    z-index: 200;
+    animation: fadeIn 0.3s;
+  }
+  #coach-hint .coach-close { float: right; cursor: pointer; color: #999; font-size: 14px; margin-left: 8px; }
+
+  /* Responsive */
+  @media (max-width: 600px) {
+    .header h1 { font-size: 18px; }
+    .score-grid { grid-template-columns: 1fr; }
+  }
+
+  /* Guide Steps */
+  .steps { counter-reset: step; }
+  .step-item {
+    display: flex;
+    gap: 14px;
+    margin-bottom: 16px;
+    align-items: flex-start;
+  }
+  .step-num {
+    counter-increment: step;
+    flex: 0 0 32px; height: 32px;
+    background: linear-gradient(135deg, var(--primary), var(--primary-light));
+    color: white;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; font-weight: 800;
+    flex-shrink: 0;
+  }
+  .step-content h4 { font-size: 14px; font-weight: 700; margin-bottom: 6px; }
+  .step-content p { font-size: 13px; color: var(--text-light); line-height: 1.6; }
+
+  /* Tag */
+  .tag {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 8px;
+    font-size: 11px;
+    font-weight: 600;
+    margin-right: 4px;
+  }
+  .tag-orange { background: #FFE0CC; color: #BF360C; }
+  .tag-green { background: #E8F5E9; color: #2E7D32; }
+  .tag-blue { background: #E3F2FD; color: #1565C0; }
+
+  /* Loading */
+  .typing { display: inline-flex; gap: 4px; align-items: center; padding: 10px 14px; }
+  .typing span { width: 7px; height: 7px; background: #CCC; border-radius: 50%; animation: typing 1.2s infinite; }
+  .typing span:nth-child(2) { animation-delay: 0.2s; }
+  .typing span:nth-child(3) { animation-delay: 0.4s; }
+  @keyframes typing { 0%,60%,100% { transform: translateY(0); } 30% { transform: translateY(-6px); } }
+
+  .hide { display: none !important; }
+</style>
+</head>
+<body>
+
+<!-- Header -->
+<div class="header">
+  <span class="header-emoji">🍎</span>
+  <h1>鲜果门店 · AI销售陪练系统</h1>
+  <p>社区小店专属 · 知识学习 + 情景演练 + 评分反馈</p>
+</div>
+
+<!-- Nav Tabs -->
+<div class="nav-tabs">
+  <div class="nav-tab active" onclick="switchPage('guide')">🏠 首页指南</div>
+  <div class="nav-tab" onclick="switchPage('knowledge')">📚 话术知识库</div>
+  <div class="nav-tab" onclick="switchPage('simulation')">🎭 情景模拟演练</div>
+  <div class="nav-tab" onclick="switchPage('handbook')">📋 导购手册</div>
+</div>
+
+<!-- ======================== PAGE: GUIDE ======================== -->
+<div class="page active" id="page-guide">
+  <div style="margin-top: 4px;"></div>
+
+  <div class="card">
+    <div class="card-title">👋 欢迎使用陪练系统</div>
+    <p style="font-size:13px;color:var(--text-light);line-height:1.8;">
+      本系统专为<strong>水果零售社区小店</strong>设计，针对门店员工三大核心痛点进行系统训练。每天练习15分钟，4周内明显提升客单价与成交率。
+    </p>
+    <div class="divider"></div>
+    <div style="display:flex;gap:10px;flex-wrap:wrap;">
+      <div style="flex:1;min-width:140px;background:#FFF3EE;border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:24px;">😶</div>
+        <div style="font-size:12px;font-weight:700;color:var(--primary);margin-top:4px;">不知道怎么开口</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:4px;">→ 开场破冰话术</div>
+      </div>
+      <div style="flex:1;min-width:140px;background:#FFF3EE;border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:24px;">😅</div>
+        <div style="font-size:12px;font-weight:700;color:var(--primary);margin-top:4px;">说不出产品重点</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:4px;">→ 产品卖点话术</div>
+      </div>
+      <div style="flex:1;min-width:140px;background:#FFF3EE;border-radius:10px;padding:12px;text-align:center;">
+        <div style="font-size:24px;">💸</div>
+        <div style="font-size:12px;font-weight:700;color:var(--primary);margin-top:4px;">客单价太低</div>
+        <div style="font-size:11px;color:var(--text-light);margin-top:4px;">→ 组合推荐话术</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🗺️ 学习路径（建议顺序）</div>
+    <div class="steps">
+      <div class="step-item">
+        <div class="step-num">1</div>
+        <div class="step-content">
+          <h4>先学知识 — 话术知识库</h4>
+          <p>掌握开场、产品推荐、组合销售的标准话术和底层逻辑。先理解"为什么这样说"。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">2</div>
+        <div class="step-content">
+          <h4>再练场景 — 情景模拟演练</h4>
+          <p>从"普通顾客买水果"开始，逐步挑战"挑剔型顾客"和"价格敏感型顾客"。练够3遍再进下一关。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">3</div>
+        <div class="step-content">
+          <h4>查速查手册 — 导购手册</h4>
+          <p>上班前翻翻，遇到特殊顾客时临时查，把它贴在收银台旁边。</p>
+        </div>
+      </div>
+      <div class="step-item">
+        <div class="step-num">4</div>
+        <div class="step-content">
+          <h4>每日打卡 — 至少演练1个场景</h4>
+          <p>坚持两周，销售语感会明显提升。目标：每个场景评分达到80分以上。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg,#E8F5E9,#F1F8E9);border-color:#A5D6A7;">
+    <div class="card-title" style="color:#2E7D32;">💡 销售教练的核心理念</div>
+    <div style="font-size:13px;line-height:1.9;color:#333;">
+      <p>卖水果不只是给钱拿货。<strong>好的导购员做的是三件事：</strong></p>
+      <br>
+      <p>① <strong>帮顾客买到合适的</strong>（问需求，推对品种）</p>
+      <p>② <strong>让顾客买得开心</strong>（让她觉得你懂行、真诚）</p>
+      <p>③ <strong>让顾客买得更多</strong>（自然地搭配推荐，而不是强推）</p>
+      <br>
+      <p style="color:var(--accent);font-weight:700;">做到这三点，客单价自然上去，回头客自然来。</p>
+    </div>
+  </div>
+
+  <div style="text-align:center;padding:8px 0 20px;">
+    <button class="btn btn-primary" style="padding:14px 36px;font-size:15px;" onclick="switchPage('knowledge')">📚 开始学习话术 →</button>
+  </div>
+</div>
+
+<!-- ======================== PAGE: KNOWLEDGE ======================== -->
+<div class="page" id="page-knowledge">
+  <div class="k-tabs">
+    <div class="k-tab active" onclick="switchKTab('k1')">🚪 开场破冰</div>
+    <div class="k-tab" onclick="switchKTab('k2')">🍓 产品推荐</div>
+    <div class="k-tab" onclick="switchKTab('k3')">🎁 组合提客单</div>
+    <div class="k-tab" onclick="switchKTab('k4')">💬 异议处理</div>
+  </div>
+
+  <!-- K1: 开场破冰 -->
+  <div class="k-content active" id="k-k1">
+    <div class="card">
+      <div class="section-badge">🚪 模块一：开场破冰</div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:14px;">进店前3句话决定顾客愿不愿意停下来。目标：自然开口，让顾客感觉舒服，而不是被推销。</p>
+
+      <div class="knowledge-block">
+        <h4>❌ 最常见的错误开场</h4>
+        <table class="compare-table" style="margin-top:8px;">
+          <tr><th>错误说法</th><th>为什么不好</th></tr>
+          <tr><td class="bad">"你好，买点啥？"</td><td>没有温度，像在审问</td></tr>
+          <tr><td class="bad">"今天有什么需要吗？"</td><td>太泛，顾客容易说"没有"然后走</td></tr>
+          <tr><td class="bad">（沉默，等顾客自己挑）</td><td>浪费了主动推荐的机会</td></tr>
+          <tr><td class="bad">"我们今天搞活动哦！"</td><td>上来就卖，顾客会防御</td></tr>
+        </table>
+      </div>
+
+      <div class="knowledge-block">
+        <h4>✅ 三种有效开场套路</h4>
+        <div style="margin-top:10px;">
+          <div class="tag tag-orange">套路A</div><strong style="font-size:13px;">产品引导型</strong>（最常用）
+          <div class="script-line" style="margin-top:8px;">
+            <div class="script-role role-staff">员工</div>
+            <div class="script-text">姐，今天到了一批<strong>云南玫瑰香葡萄</strong>，特别甜，小粒的那种，你要不要先尝一颗？</div>
+          </div>
+          <div class="tip-box">💡 <strong>要点</strong>：说具体产地/品种，加"甜/脆/香"等感官词，再发出一个小邀请（试吃）</div>
+        </div>
+        <div class="divider"></div>
+        <div>
+          <div class="tag tag-green">套路B</div><strong style="font-size:13px;">场景关怀型</strong>（适合熟客）
+          <div class="script-line" style="margin-top:8px;">
+            <div class="script-role role-staff">员工</div>
+            <div class="script-text">姐，上次你买的那个爱媛橙你家孩子喜不喜欢？今天到了新货，我帮你留了几斤。</div>
+          </div>
+          <div class="tip-box">💡 <strong>要点</strong>：记住上次的购买，体现你记得她，产生个人情感连接</div>
+        </div>
+        <div class="divider"></div>
+        <div>
+          <div class="tag tag-blue">套路C</div><strong style="font-size:13px;">时令引导型</strong>（节气/天气）
+          <div class="script-line" style="margin-top:8px;">
+            <div class="script-role role-staff">员工</div>
+            <div class="script-text">最近天热，多吃西瓜和水蜜桃补补水。今天的桃子是今早刚来的，你摸一下，皮软了就是熟透了，很甜的。</div>
+          </div>
+          <div class="tip-box">💡 <strong>要点</strong>：结合顾客实际需求（健康/天气），再引导到具体产品</div>
+        </div>
+      </div>
+
+      <div class="warning-box">
+        ⚠️ <strong>记住这条铁律：</strong> 开场不谈价格，不谈活动，先说产品本身的吸引力。让顾客先对产品感兴趣，再谈钱。
+      </div>
+    </div>
+
+    <div style="text-align:right;padding-bottom:8px;">
+      <button class="btn btn-primary btn-small" onclick="switchKTab('k2')">下一节：产品推荐 →</button>
+    </div>
+  </div>
+
+  <!-- K2: 产品推荐 -->
+  <div class="k-content" id="k-k2">
+    <div class="card">
+      <div class="section-badge">🍓 模块二：产品推荐话术</div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:14px;">顾客说"这个怎么样？"——这是黄金时刻！大多数员工只会说"很甜很好吃"，这远远不够。</p>
+
+      <div class="knowledge-block">
+        <h4>🔑 产品介绍公式：FAB法则</h4>
+        <ul style="margin-top:8px;">
+          <li><strong>F (Feature 特征)</strong>：产品的客观事实（产地、品种、大小）</li>
+          <li><strong>A (Advantage 优势)</strong>：与其他产品相比的优势</li>
+          <li><strong>B (Benefit 利益)</strong>：顾客能获得的具体好处</li>
+        </ul>
+        <div class="tip-box" style="margin-top:10px;">
+          顾客买的不是水果，买的是<strong>"吃到嘴里的体验"</strong>和<strong>"买对了的满足感"</strong>。
+        </div>
+      </div>
+
+      <div class="knowledge-block">
+        <h4>✅ 核心单品话术示例</h4>
+
+        <div style="margin-bottom:14px;">
+          <strong style="color:var(--primary-dark);">🍇 葡萄类</strong>
+          <div class="script-line" style="margin-top:8px;">
+            <div class="script-role role-staff">员工</div>
+            <div class="script-text">这个是新疆阳光玫瑰<span class="tag tag-orange">产地</span>，皮薄无核，直接整颗吃<span class="tag tag-green">特征</span>，有明显的玫瑰花香，不酸不涩<span class="tag tag-blue">体验</span>。特别适合给老人和小孩吃，不用吐籽，很方便。<span class="tag tag-green">利益</span></div>
+          </div>
+        </div>
+
+        <div style="margin-bottom:14px;">
+          <strong style="color:var(--primary-dark);">🍊 橙子/柑橘类</strong>
+          <div class="script-line" style="margin-top:8px;">
+            <div class="script-role role-staff">员工</div>
+            <div class="script-text">爱媛38号，果肉是橙红色的，那是因为它是橙子和橘子杂交的，甜度高、水分足，直接剥开就能吃，一点都不酸。很多顾客说比普通橙子甜多了，回购特别高。</div>
+          </div>
+        </div>
+
+        <div>
+          <strong style="color:var(--primary-dark);">🍑 桃/油桃类</strong>
+          <div class="script-line" style="margin-top:8px;">
+            <div class="script-role role-staff">员工</div>
+            <div class="script-text">你看这个桃，按下去有一点软的感觉，这是熟透了——熟透的桃子最甜，汁水最多。今天上午刚到的，你今天带回去今天吃，正好。</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="knowledge-block">
+        <h4>📌 万能卖点模板（背下来）</h4>
+        <div style="background:#FFF3EE;border-radius:8px;padding:12px;font-size:13px;line-height:1.9;margin-top:8px;">
+          "这个 <strong>[品种名]</strong>，是 <strong>[产地]</strong> 的，
+          特点是 <strong>[1个核心特征]</strong>，
+          吃起来 <strong>[口感描述]</strong>，
+          <strong>[适合的人/场景]</strong> 特别合适。
+          <br>你要不要拿一点尝尝？"
+        </div>
+        <div class="tip-box" style="margin-top:10px;">最后加一句<strong>"你要不要拿一点尝尝"</strong>，主动给顾客一个行动指令，成交率提升30%以上。</div>
+      </div>
+    </div>
+    <div style="text-align:right;padding-bottom:8px;">
+      <button class="btn btn-primary btn-small" onclick="switchKTab('k3')">下一节：组合提客单 →</button>
+    </div>
+  </div>
+
+  <!-- K3: 组合提客单 -->
+  <div class="k-content" id="k-k3">
+    <div class="card">
+      <div class="section-badge">🎁 模块三：组合销售·提升客单价</div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:14px;">客单价低的根本原因：员工只等顾客自己挑，没有主动做搭配推荐。以下技巧让你自然地多卖一品。</p>
+
+      <div class="knowledge-block">
+        <h4>💰 客单价提升的3个武器</h4>
+        <div class="steps" style="margin-top:10px;">
+          <div class="step-item">
+            <div class="step-num" style="background:linear-gradient(135deg,var(--accent),var(--accent-light));">1</div>
+            <div class="step-content">
+              <h4>场景搭配法</h4>
+              <p>问顾客用途，然后围绕用途推荐组合</p>
+              <div class="script-line" style="margin-top:8px;">
+                <div class="script-role role-staff">员工</div>
+                <div class="script-text">"姐，这是你们自己吃还是招待客人的？"</div>
+              </div>
+              <div class="script-line">
+                <div class="script-role role-customer">顾客</div>
+                <div class="script-text">亲戚来了。</div>
+              </div>
+              <div class="script-line">
+                <div class="script-role role-staff">员工</div>
+                <div class="script-text">"那你可以搭一盒樱桃，放在果盘里特别好看，又高档，客人一来就觉得你很用心。葡萄加樱桃，颜色也好看。"</div>
+              </div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num" style="background:linear-gradient(135deg,var(--accent),var(--accent-light));">2</div>
+            <div class="step-content">
+              <h4>关联推荐法</h4>
+              <p>顾客买A，顺手推荐B，给出搭配理由</p>
+              <div class="script-line" style="margin-top:8px;">
+                <div class="script-role role-staff">员工</div>
+                <div class="script-text">"你买了葡萄，要不要带点猕猴桃？这两个一起吃，葡萄补铁猕猴桃补VC，吸收更好。最近很多顾客都这样搭的。"</div>
+              </div>
+              <div class="tip-box">💡 加入"最近很多顾客都这样买"——从众心理，让推荐更自然</div>
+            </div>
+          </div>
+          <div class="step-item">
+            <div class="step-num" style="background:linear-gradient(135deg,var(--accent),var(--accent-light));">3</div>
+            <div class="step-content">
+              <h4>小份升级法</h4>
+              <p>顾客买少，推荐买多一点的理由</p>
+              <div class="script-line" style="margin-top:8px;">
+                <div class="script-role role-staff">员工</div>
+                <div class="script-text">"你要一斤的话，我建议你多拿半斤。这个葡萄好吃的话一家人一下就吃完了，多拿点，不然回来买可惜路也跑了。"</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="knowledge-block">
+        <h4>🚫 推荐时的禁忌</h4>
+        <ul>
+          <li style="color:#C62828;">❌ "你要不要再买点别的？"（太生硬）</li>
+          <li style="color:#C62828;">❌ "那个也很好"（没有具体理由）</li>
+          <li style="color:#C62828;">❌ 顾客刚拒绝一次就立刻放弃</li>
+          <li style="color:#2E7D32;">✅ 推荐时要有具体场景/理由，让顾客感觉是为她好</li>
+          <li style="color:#2E7D32;">✅ 最多推荐1-2次，不强迫</li>
+        </ul>
+      </div>
+    </div>
+    <div style="text-align:right;padding-bottom:8px;">
+      <button class="btn btn-primary btn-small" onclick="switchKTab('k4')">下一节：异议处理 →</button>
+    </div>
+  </div>
+
+  <!-- K4: 异议处理 -->
+  <div class="k-content" id="k-k4">
+    <div class="card">
+      <div class="section-badge">💬 模块四：异议处理</div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:14px;">顾客的拒绝和质疑是销售最关键的时刻。回应得好，单子能救回来；回应不好，顾客就走了。</p>
+
+      <div class="knowledge-block">
+        <h4>常见异议 + 黄金回应话术</h4>
+        <table class="compare-table" style="margin-top:10px;">
+          <tr><th>顾客说</th><th class="good">这样回应</th></tr>
+          <tr>
+            <td>"太贵了"</td>
+            <td class="good">"贵是有贵的原因，这个是 [产地] 直采的，比超市的新鲜2-3天，甜度也高，你吃过就知道了。先拿一斤尝尝？"</td>
+          </tr>
+          <tr>
+            <td>"我自己看看"</td>
+            <td class="good">"好，你慢慢挑。我给你说一下今天哪几样最新鲜，方便你挑。"（不走，继续介绍）</td>
+          </tr>
+          <tr>
+            <td>"上次买的不甜"</td>
+            <td class="good">"哎，真不好意思！这次到的是不同批次，我帮你先尝一颗，不甜不买，你放心。"</td>
+          </tr>
+          <tr>
+            <td>"旁边那家更便宜"</td>
+            <td class="good">"价格确实差一点，但我们的 [具体差异：品种/新鲜度/产地] 不一样，你比比就知道了。"</td>
+          </tr>
+          <tr>
+            <td>"不用了，就这些"</td>
+            <td class="good">"好的，我帮你装好。（打包时）对了，今天的 XX 刚到，很多老客户在拿，你要不要看一下？"</td>
+          </tr>
+          <tr>
+            <td>"给我少算一点吧"</td>
+            <td class="good">"价格这块我确实没法少，不过你今天要是买够 XX 斤，我可以多搭几颗给你尝尝新品，值的。"</td>
+          </tr>
+        </table>
+      </div>
+
+      <div class="tip-box" style="margin-top:0;">
+        💡 <strong>处理异议的核心原则：先认同情绪，再解决问题。</strong> 永远不要跟顾客争，也不要直接否定她的感受。
+      </div>
+    </div>
+
+    <div style="text-align:center;padding:4px 0 16px;">
+      <button class="btn btn-primary" onclick="switchPage('simulation')">🎭 去情景模拟练习 →</button>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PAGE: SIMULATION ======================== -->
+<div class="page" id="page-simulation">
+  <!-- Scene Selector -->
+  <div id="sim-selector">
+    <div class="card">
+      <div class="card-title">🎭 选择训练场景</div>
+      <p style="font-size:13px;color:var(--text-light);margin-bottom:14px;">选择一个场景开始练习。AI会扮演顾客，你来扮演门店员工。练完后会收到评分和反馈。</p>
+      <div class="scenario-grid">
+        <div class="scenario-card" onclick="startScenario('A')">
+          <div class="s-icon">🛍️</div>
+          <div class="s-name">场景A：普通顾客进店</div>
+          <div class="s-desc">顾客随意逛，你需要主动开场并推荐水果</div>
+          <div class="s-diff diff-easy">入门级</div>
+        </div>
+        <div class="scenario-card" onclick="startScenario('B')">
+          <div class="s-icon">💰</div>
+          <div class="s-name">场景B：价格敏感型顾客</div>
+          <div class="s-desc">顾客嫌贵，你需要解释价值并促成成交</div>
+          <div class="s-diff diff-medium">进阶级</div>
+        </div>
+        <div class="scenario-card" onclick="startScenario('C')">
+          <div class="s-icon">🎁</div>
+          <div class="s-name">场景C：提升客单价</div>
+          <div class="s-desc">顾客只买一样，你需要自然地做组合推荐</div>
+          <div class="s-diff diff-medium">进阶级</div>
+        </div>
+        <div class="scenario-card" onclick="startScenario('D')">
+          <div class="s-icon">😤</div>
+          <div class="s-name">场景D：挑剔投诉型顾客</div>
+          <div class="s-desc">顾客上次体验不好，你需要安抚并挽回</div>
+          <div class="s-diff diff-hard">挑战级</div>
+        </div>
+      </div>
+    </div>
+    <div class="card" style="background:#E8F5E9;border-color:#A5D6A7;">
+      <div class="card-title" style="color:#2E7D32;">📌 演练小贴士</div>
+      <ul class="checklist">
+        <li>用中文自然回答，不用套模板，像真实对话一样</li>
+        <li>每个场景大约6-8轮对话，坚持把场景走完</li>
+        <li>演练结束后查看评分，重点看"辅导建议"那栏</li>
+        <li>同一场景练3遍，体会哪种回答效果更好</li>
+      </ul>
+    </div>
+  </div>
+
+  <!-- Chat Interface -->
+  <div id="sim-chat" class="hide">
+    <div style="border-radius:var(--radius);overflow:hidden;box-shadow:var(--shadow);">
+      <div class="sim-header">
+        <div class="customer-avatar" id="sim-avatar">🧑</div>
+        <div class="sim-header-info">
+          <h3 id="sim-title">场景A：普通顾客进店</h3>
+          <p id="sim-subtitle">AI扮演顾客 · 你来应对</p>
+        </div>
+        <button class="btn btn-secondary btn-small" style="margin-left:auto;" onclick="endScenario()">结束 ✓</button>
+      </div>
+      <div class="chat-area" id="chat-area"></div>
+      <div class="sim-input-area">
+        <div class="quick-replies" id="quick-replies"></div>
+        <div class="sim-input-row" style="margin-top:10px;">
+          <input type="text" class="sim-input" id="user-input" placeholder="输入你的回应..." onkeydown="if(event.key==='Enter')sendMessage()" />
+          <button class="btn btn-primary" onclick="sendMessage()">发送</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Score Panel -->
+    <div class="score-panel hide" id="score-panel">
+      <div class="score-title">🏆 本次演练评分报告</div>
+      <div class="score-grid" id="score-grid"></div>
+      <div class="score-feedback" id="score-feedback"></div>
+      <div style="margin-top:14px;display:flex;gap:10px;flex-wrap:wrap;">
+        <button class="btn btn-green" onclick="retryScenario()">🔄 再练一次</button>
+        <button class="btn btn-secondary" onclick="backToSelector()">← 选其他场景</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ======================== PAGE: HANDBOOK ======================== -->
+<div class="page" id="page-handbook">
+  <div class="card">
+    <div class="card-title">📋 门店导购速查手册</div>
+    <p style="font-size:13px;color:var(--text-light);margin-bottom:4px;">可打印贴在收银台旁边，遇到情况快速查阅。</p>
+  </div>
+
+  <div class="card">
+    <div class="section-badge">⚡ 万能开场3句话</div>
+    <div class="knowledge-block">
+      <div class="script-line"><div class="script-role role-staff">A</div><div class="script-text">姐/大哥，今天刚到的 <strong>[品种]</strong>，<strong>[产地]</strong> 的，特别 <strong>[甜/香/新鲜]</strong>，要不要尝一颗？</div></div>
+      <div class="script-line"><div class="script-role role-staff">B</div><div class="script-text">天气 <strong>[热/干]</strong>，多吃 <strong>[时令水果]</strong> 补 <strong>[营养/水分]</strong>，今天的 XX 正是当季的，很好吃。</div></div>
+      <div class="script-line"><div class="script-role role-staff">C</div><div class="script-text">你上次买的那个 <strong>[XX]</strong>，这次到新货了，我帮你留着呢。</div></div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-badge">🍓 产品推荐模板</div>
+    <div class="knowledge-block">
+      <div style="background:#FFF3EE;border-radius:8px;padding:12px;font-size:14px;line-height:2;font-weight:500;">
+        "这个 <span style="color:var(--primary);font-weight:800;">[品种]</span>，
+        <span style="color:var(--accent);font-weight:800;">[产地]</span> 的，
+        <span style="color:#1565C0;font-weight:800;">[核心特点]</span>，
+        吃起来 <span style="color:#6A1B9A;font-weight:800;">[口感]</span>，
+        <span style="color:#E65100;font-weight:800;">[适合人群/场景]</span> 特别合适，
+        要不要拿一点尝尝？"
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-badge">🎁 组合推荐触发词</div>
+    <div class="knowledge-block">
+      <ul class="checklist">
+        <li>顾客说"招待客人" → 推高颜值/高档品（樱桃、草莓、精品葡萄）</li>
+        <li>顾客说"给孩子" → 推安全无核/甜度高的（无核葡萄、砂糖橘、哈密瓜）</li>
+        <li>顾客说"给老人" → 推软糯/易消化的（香蕉、桃、猕猴桃）</li>
+        <li>顾客买了一样水果 → 推关联搭配，给出营养/味道理由</li>
+        <li>结账时 → "今天 XX 很多人买，你要不要看一下？"</li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="section-badge">💬 异议处理速查</div>
+    <table class="compare-table">
+      <tr><th>顾客说</th><th>你说</th></tr>
+      <tr><td>"太贵了"</td><td class="good">说产地/新鲜度差异，邀请先尝</td></tr>
+      <tr><td>"我随便看看"</td><td class="good">说"好"，但继续介绍今日新鲜品</td></tr>
+      <tr><td>"上次不甜"</td><td class="good">致歉 + 当场试吃 + 保证</td></tr>
+      <tr><td>"别家便宜"</td><td class="good">说差异点，不贬低对方</td></tr>
+      <tr><td>"不要了/够了"</td><td class="good">打包时顺带一提新品，温和不强迫</td></tr>
+    </table>
+  </div>
+
+  <div class="card" style="background:linear-gradient(135deg,#FFF3E0,#FFF8E1);border-color:#FFCC80;">
+    <div class="card-title" style="color:#E65100;">🌟 每日上班前自检5问</div>
+    <ul class="checklist" style="font-size:13px;">
+      <li>今天有哪几样货是最新鲜的？我能说出它们的特点吗？</li>
+      <li>今天有没有当季推荐品？我能用一句话描述它的口感吗？</li>
+      <li>我今天能不能主动跟每位进店顾客说第一句话？</li>
+      <li>我今天会不会在收银时，顺口推荐一样搭配产品？</li>
+      <li>如果有顾客投诉，我准备好怎么回应了吗？</li>
+    </ul>
+  </div>
+</div>
+
+<!-- ======================== SCRIPTS & LOGIC ======================== -->
+<script>
+// ---- Page Navigation ----
+function switchPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-' + id).classList.add('active');
+  const tabs = document.querySelectorAll('.nav-tab');
+  const pageMap = { guide: 0, knowledge: 1, simulation: 2, handbook: 3 };
+  tabs[pageMap[id]].classList.add('active');
+  window.scrollTo(0, 0);
+}
+
+function switchKTab(id) {
+  document.querySelectorAll('.k-tab').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('.k-content').forEach(c => c.classList.remove('active'));
+  document.getElementById('k-' + id).classList.add('active');
+  const idx = { k1: 0, k2: 1, k3: 2, k4: 3 };
+  document.querySelectorAll('.k-tab')[idx[id]].classList.add('active');
+}
+
+// ========================================================
+//  关键词检测工具
+// ========================================================
+function hasAny(text, words) {
+  const t = text.toLowerCase();
+  return words.some(w => t.includes(w));
+}
+
+// 判断员工回应质量的通用关键词组
+const GOOD_OPEN    = ['尝','今天','刚到','产地','新疆','云南','甜','香','新鲜','推荐','姐','大哥','妹'];
+const GOOD_DETAIL  = ['产地','甜度','口感','直采','品种','无核','无籽','花香','汁水','新鲜','软','脆'];
+const GOOD_COMBO   = ['搭配','一起','猕猴桃','蓝莓','樱桃','草莓','橙子','香蕉','营养','vc','维生素'];
+const GOOD_PRICE   = ['因为','原因','产地','直采','新鲜','品质','不一样','差异','甜度','口感'];
+const GOOD_APOLOGY = ['对不起','抱歉','不好意思','失误','我们的','遗憾','让您'];
+const GOOD_REMEDY  = ['换','退','重新','补偿','免费','赠','保证','今天','这次','帮您'];
+const GOOD_CLOSE   = ['要不要','拿一点','带走','先试','来一斤','尝尝','帮您装','多少斤','要几斤'];
+
+// ========================================================
+//  场景状态机定义
+//  每个场景有若干"状态节点"，每个节点包含：
+//    - replies: 顾客可能说的话（数组，随机选一条）
+//    - check(staffText): 根据员工回应决定下一状态
+//    - coach: 可选教练提示
+//    - isEnd: true 则触发结局
+//    - outcome: 'success' | 'fail'
+// ========================================================
+
+const SCENE_A = {
+  avatar: '👩', title: '场景A：普通顾客进店',
+  subtitle: '顾客随意逛 · 练习主动开场+推荐',
+  evalCriteria: ['开场是否自然主动','产品介绍是否有卖点','是否尝试推荐搭配','整体沟通是否友好'],
+  openerMsg: '（顾客进店，随意打量货架，没有开口说话）',
+  openerContext: '🎭 场景开始：一位顾客刚走进店里，正在随意看货架，还没有说话。作为员工，你要主动开口。',
+  quickReplies: ['姐，今天刚到云南玫瑰香葡萄，特别甜，尝一颗吗？','您好！今天桃子刚到货，正熟，很多顾客都在拿。','最近天热，今天的西瓜是刚开的，很甜，要不要来一块？'],
+  states: {
+    s0: {
+      // 顾客对员工第一句开场做出反应
+      check(txt) {
+        if (hasAny(txt, GOOD_OPEN)) return 's1_good';
+        return 's1_cold';
+      }
+    },
+    s1_good: {
+      replies: ['哦，玫瑰香葡萄？这个甜不甜啊，我上次买的有点酸。','听起来不错，多少钱一斤？','那我尝尝看。'],
+      coach: '开场很好！顾客已经在问问题了，抓住机会介绍产品卖点。',
+      check(txt) {
+        if (hasAny(txt, GOOD_DETAIL)) return 's2_intro_good';
+        return 's2_intro_weak';
+      }
+    },
+    s1_cold: {
+      replies: ['嗯……我随便看看。','哦。','没事，我自己挑。'],
+      coach: '💡 顾客有点冷淡。试试说具体产品名 + 产地 + 口感，再邀请试吃，比问"买啥"更吸引人。',
+      check(txt) {
+        if (hasAny(txt, GOOD_OPEN.concat(GOOD_DETAIL))) return 's2_intro_good';
+        return 's2_intro_weak';
+      }
+    },
+    s2_intro_good: {
+      replies: ['那这葡萄皮要不要吐？','有没有不甜的风险？买回去酸了怎么办？','好，那我拿一斤试试。'],
+      check(txt) {
+        if (hasAny(txt, GOOD_CLOSE.concat(GOOD_COMBO))) return 's3_combo';
+        return 's3_nocombo';
+      }
+    },
+    s2_intro_weak: {
+      replies: ['就是甜而已对吧，哪家不说甜呢。','你们这都比超市贵，为啥要买你们的？','我先看看吧。'],
+      coach: '💡 顾客开始质疑了。记得用FAB：说产地特征 → 比较优势 → 顾客得到的好处，别只说"甜"。',
+      check(txt) {
+        if (hasAny(txt, GOOD_DETAIL.concat(GOOD_PRICE))) return 's3_combo';
+        return 's3_nocombo';
+      }
+    },
+    s3_combo: {
+      replies: ['那旁边还有什么好吃的？','猕猴桃多少钱？','好，你帮我搭一个推荐组合吧，家里三口人。'],
+      check(txt) {
+        if (hasAny(txt, GOOD_COMBO)) return 's4_buy';
+        return 's4_single';
+      }
+    },
+    s3_nocombo: {
+      replies: ['那就这葡萄吧，帮我拿一斤。','行吧，称一下。','就这个了，多少钱？'],
+      check(txt) {
+        return 's4_single';
+      }
+    },
+    s4_buy: {
+      replies: ['好，那给我来一斤葡萄，再来一盒蓝莓吧，你介绍得挺有意思的。','行，我就拿葡萄加猕猴桃，多少钱？'],
+      check(txt) { return 'end_success'; }
+    },
+    s4_single: {
+      replies: ['好，就拿这葡萄，帮我称一下。','行，给我拿一斤，不要太熟的。'],
+      check(txt) { return 'end_ok'; }
+    },
+    end_success: {
+      isEnd: true, outcome: 'success',
+      endMsg: '🎉 顾客买了葡萄 + 搭配水果，成功提升了客单价！',
+    },
+    end_ok: {
+      isEnd: true, outcome: 'ok',
+      endMsg: '✅ 顾客完成了基础购买，但没有追加。下次可以多尝试组合推荐。',
+    }
+  }
+};
+
+const SCENE_B = {
+  avatar: '👩‍🦳', title: '场景B：价格敏感型顾客',
+  subtitle: '顾客嫌贵 · 练习价值解释+促成',
+  evalCriteria: ['是否承认价格差异而不回避','是否说出具体价值差异点','是否保持友好态度不争执','最终是否尝试促成购买'],
+  openerMsg: '哎，这葡萄怎么这么贵！28块一斤，旁边那家才18块！',
+  openerContext: '🎭 场景开始：一位大妈在葡萄架前拿起价签，开始嫌贵。',
+  quickReplies: ['大妈，贵是有原因的，这是新疆直采的，甜度不一样','确实比别家贵一点，但您先尝一颗，不甜不买','我理解您，不过产地和品种真的不一样，我跟您说说'],
+  states: {
+    s0: {
+      check(txt) {
+        if (hasAny(txt, ['理解','确实','贵','原因','因为','知道'])) return 's1_acknowledge';
+        if (hasAny(txt, ['我们质量好','不一样','比较好'])) return 's1_vague';
+        return 's1_defensive';
+      }
+    },
+    s1_acknowledge: {
+      replies: ['那你说说，贵在哪儿？18块的和28块的有什么区别？','你别光说贵有原因，得拿出实际的来。','那行，你解释解释。'],
+      check(txt) {
+        if (hasAny(txt, GOOD_PRICE)) return 's2_detail_good';
+        return 's2_detail_weak';
+      }
+    },
+    s1_vague: {
+      replies: ['哪家不说自己质量好！', '说不清楚就是你们在骗人！', '那超市的葡萄也说质量好，怎么说？'],
+      coach: '💡 顾客不买账。说"质量好"太空洞，要说具体：新疆/云南产地、直采、无农药、糖度高几度……',
+      check(txt) {
+        if (hasAny(txt, GOOD_PRICE)) return 's2_detail_good';
+        return 's2_detail_weak';
+      }
+    },
+    s1_defensive: {
+      replies: ['哼，你这是什么态度！','你这是嫌我事多？','算了算了，我去别家看看。'],
+      coach: '⚠️ 顾客有点生气了。遇到嫌贵的顾客，千万不要辩解或表现出不耐烦，先认同她的感受。',
+      check(txt) {
+        if (hasAny(txt, GOOD_APOLOGY.concat(['大妈','没有','不是']))) return 's2_recover';
+        return 'end_fail';
+      }
+    },
+    s2_detail_good: {
+      replies: ['那……这个甜多少？','行，你让我尝一颗看看，真的不甜就别怪我不买啊。','好吧，产地确实有差别，我尝尝再说。'],
+      coach: '👍 顾客愿意尝了，这是好信号！现在要把试吃变成成交。',
+      check(txt) {
+        if (hasAny(txt, GOOD_CLOSE.concat(['好','行','来','多少斤','几斤']))) return 's3_taste_close';
+        return 's3_taste_hesitate';
+      }
+    },
+    s2_detail_weak: {
+      replies: ['我还是觉得贵，算了。','说了半天还是不清楚，旁边那家18块的我买得放心一些。','你说的我也没听明白，差别在哪里？'],
+      coach: '💡 关键时刻：顾客快要走了。试试说一个顾客能感受到的具体差异，然后邀请对比尝一下。',
+      check(txt) {
+        if (hasAny(txt, GOOD_PRICE.concat(['尝','试','先','来']))) return 's3_taste_hesitate';
+        return 'end_fail';
+      }
+    },
+    s2_recover: {
+      replies: ['那算了，你刚才态度不好我才这样说的。','哼，那你解释解释，这葡萄凭什么这么贵？'],
+      check(txt) {
+        if (hasAny(txt, GOOD_PRICE)) return 's2_detail_good';
+        return 'end_fail';
+      }
+    },
+    s3_taste_close: {
+      replies: ['嗯，还真挺甜的！比我想的好。那……给我来两斤吧。', '确实比旁边那家甜，行，拿两斤，帮我装好。'],
+      check(txt) { return 'end_success'; }
+    },
+    s3_taste_hesitate: {
+      replies: ['还行吧，但还是觉得价格高……你能不能便宜一点？', '甜是甜，就是贵了点，拿一斤吧，别两斤了。'],
+      check(txt) {
+        if (hasAny(txt, ['行','好','没问题','一斤','称','帮您'].concat(GOOD_CLOSE))) return 'end_ok';
+        return 'end_ok';
+      }
+    },
+    end_success: {
+      isEnd: true, outcome: 'success',
+      endMsg: '🎉 顾客被你说服了，买了两斤！价值解释成功，成交！',
+    },
+    end_ok: {
+      isEnd: true, outcome: 'ok',
+      endMsg: '✅ 顾客买了一斤。基本成交，但下次可以更早邀请试吃，让产品本身说话。',
+    },
+    end_fail: {
+      isEnd: true, outcome: 'fail',
+      endMsg: '😞 顾客离开了，没有成交。关键问题：没有说出具体价值差异点，或态度引起顾客反感。',
+    }
+  }
+};
+
+const SCENE_C = {
+  avatar: '🧑', title: '场景C：提升客单价',
+  subtitle: '顾客只买草莓 · 练习自然组合推荐',
+  evalCriteria: ['是否完成基本结算服务','是否尝试推荐搭配产品','推荐理由是否有说服力','推荐是否自然不突兀'],
+  openerMsg: '这盒草莓多少钱？帮我称一下。',
+  openerContext: '🎭 场景开始：一位上班族拿了一盒草莓放到台秤前，准备付钱走人。',
+  quickReplies: ['好的！这盒大概30元左右。对了，今天蓝莓也很甜，草莓+蓝莓搭着吃VC很高','帮你称！草莓配猕猴桃特别好，猕猴桃今天刚到，很新鲜','好的称一下。你是自己吃还是带去公司？'],
+  states: {
+    s0: {
+      check(txt) {
+        // 员工回应了称重，是否同时推荐了搭配
+        if (hasAny(txt, GOOD_COMBO.concat(['搭配','一起','顺便','对了','另外']))) return 's1_combo_attempt';
+        return 's1_just_weigh';
+      }
+    },
+    s1_combo_attempt: {
+      replies: ['蓝莓多少钱？','猕猴桃？那个怎么吃？','我赶时间，就草莓了。'],
+      check(txt) {
+        // 是否有具体推荐理由
+        if (hasAny(txt, GOOD_DETAIL.concat(GOOD_COMBO).concat(['营养','vc','维生素','因为','搭','好看']))) return 's2_reason_good';
+        return 's2_reason_weak';
+      }
+    },
+    s1_just_weigh: {
+      replies: ['好，多少钱？','扫码还是现金？','等等，这草莓多少钱一盒？'],
+      coach: '💡 顾客还在结账，这是唯一的推荐机会！"对了，今天XXX也很新鲜，XXX和草莓很配"——结账时顺口一提最自然。',
+      check(txt) {
+        if (hasAny(txt, GOOD_COMBO.concat(['顺便','对了','另外','还有']))){
+          return 's2_reason_good';
+        }
+        return 's2_pay_end';
+      }
+    },
+    s2_reason_good: {
+      replies: [
+        '蓝莓多少钱？我看看……那给我来一盒吧，反正也不贵。',
+        '猕猴桃多少？行，加一个吧。',
+        '哦是吗，好吧，拿一盒蓝莓一起吧，你帮我装一起。'
+      ],
+      check(txt) { return 'end_success'; }
+    },
+    s2_reason_weak: {
+      replies: ['不用了，就草莓，我还要赶地铁。','不买了，谢谢。','算了，太多了，就这个。'],
+      coach: '💡 顾客拒绝了。推荐时要加理由，比如"草莓加蓝莓一起吃VC吸收更好"，比"那个也好"有用得多。',
+      check(txt) {
+        if (hasAny(txt, ['好的','没事','好','谢谢','下次'])) return 's3_checkout';
+        return 's3_checkout';
+      }
+    },
+    s2_pay_end: {
+      replies: ['好的，扫码。谢谢。'],
+      check(txt) { return 'end_ok'; }
+    },
+    s3_checkout: {
+      replies: ['好，就草莓，多少钱？','扫码。快点哈，我赶时间。'],
+      check(txt) { return 'end_ok'; }
+    },
+    end_success: {
+      isEnd: true, outcome: 'success',
+      endMsg: '🎉 顾客额外买了搭配产品！客单价成功提升，组合推荐有效！',
+    },
+    end_ok: {
+      isEnd: true, outcome: 'ok',
+      endMsg: '✅ 顾客只买了草莓。服务完成，但客单价没有提升。关键：要有具体推荐理由，才能打动时间紧的顾客。',
+    }
+  }
+};
+
+const SCENE_D = {
+  avatar: '😤', title: '场景D：挑剔投诉型顾客',
+  subtitle: '顾客投诉上次橙子不甜 · 练习安抚+挽回',
+  evalCriteria: ['是否第一时间真诚道歉','是否避免找借口推卸','是否给出具体补救方案','是否尝试挽回顾客关系'],
+  openerMsg: '你们家上次卖给我的橙子一点都不甜，像酸水一样！我都跟你们说是要甜的，怎么搞的！',
+  openerContext: '🎭 场景开始：一位顾客气冲冲走进来，说上次买的橙子不甜。',
+  quickReplies: ['真的很对不起，让您失望了，这是我们的失误','非常抱歉！您上次买的是哪种橙子，我帮您看看怎么补偿','对不起，这次我亲自帮您挑，保证甜的才给您'],
+  states: {
+    s0: {
+      check(txt) {
+        if (hasAny(txt, GOOD_APOLOGY)) return 's1_apologized';
+        if (hasAny(txt, ['批次','不一定','可能','季节','本来','供应商','不是我们'])) return 's1_excused';
+        return 's1_cold';
+      }
+    },
+    s1_apologized: {
+      replies: ['哼，道歉有什么用，我钱都花了！','你说对不起，那怎么处理？','行吧，我就是来讨个说法的，你们打算怎么办？'],
+      coach: '👍 道歉到位了！现在顾客在等你给出解决方案，要说出具体的补救措施。',
+      check(txt) {
+        if (hasAny(txt, GOOD_REMEDY)) return 's2_remedy_good';
+        return 's2_remedy_weak';
+      }
+    },
+    s1_excused: {
+      replies: ['你这是什么态度！找借口是吗？！','啊？那不是你们的问题？那是谁的问题？','这就是在推卸责任！我要投诉你们！'],
+      coach: '⚠️ 危险！找借口是最大的禁忌。顾客已经很生气，继续找理由只会让她更愤怒。现在必须立刻真诚道歉并给出解决方案。',
+      check(txt) {
+        if (hasAny(txt, GOOD_APOLOGY)) return 's1_apologized';
+        return 'end_fail';
+      }
+    },
+    s1_cold: {
+      replies: ['你什么意思？不说话？','你态度怎么这样？','哼，不想管是吧，我发朋友圈去！'],
+      coach: '⚠️ 顾客在等你回应！沉默或冷漠会让她更愤怒。马上真诚道歉：先说对不起，再说怎么解决。',
+      check(txt) {
+        if (hasAny(txt, GOOD_APOLOGY)) return 's1_apologized';
+        return 'end_fail';
+      }
+    },
+    s2_remedy_good: {
+      replies: [
+        '换新的？行，那你帮我挑一袋甜的吧。',
+        '那好，我今天买，如果还不甜你给我退钱啊。',
+        '那……免费尝一颗？好，给我尝尝吧。'
+      ],
+      coach: '👍 顾客态度软化了！这时候可以顺势推荐一个今天新到的甜品种，把她变成回头客。',
+      check(txt) {
+        if (hasAny(txt, ['好','行','谢','欢迎','下次','会员','留'].concat(GOOD_CLOSE))) return 's3_win_back';
+        return 's3_win_back';
+      }
+    },
+    s2_remedy_weak: {
+      replies: ['就这样？没有什么具体处理吗？','我要的不是这个！我要一个说法！','你打算怎么赔偿我？'],
+      coach: '💡 顾客还在等具体方案。"道歉"之后必须跟上实际行动：换货、补赠、试吃保证，至少选一个明确说出来。',
+      check(txt) {
+        if (hasAny(txt, GOOD_REMEDY)) return 's2_remedy_good';
+        return 'end_fail';
+      }
+    },
+    s3_win_back: {
+      replies: [
+        '行吧，今天试试。不过下次还是这样我可不来了啊。',
+        '那好，帮我拿三斤。你们平时进的什么品种，怎么挑甜的？',
+        '嗯……其实我是这附近的居民，就是不想跑太远，你们好一点我还是愿意来的。'
+      ],
+      check(txt) { return 'end_success'; }
+    },
+    end_success: {
+      isEnd: true, outcome: 'success',
+      endMsg: '🎉 顾客被你挽回了！她今天继续购买，而且对你们留下了好印象。处理投诉的最高境界：把投诉顾客变成忠实回头客。',
+    },
+    end_fail: {
+      isEnd: true, outcome: 'fail',
+      endMsg: '😞 顾客离开了，很可能会发朋友圈差评。关键失误：没有第一时间真诚道歉，或者一直在找借口推卸责任。',
+    }
+  }
+};
+
+const SCENE_MAP = { A: SCENE_A, B: SCENE_B, C: SCENE_C, D: SCENE_D };
+
+// ========================================================
+//  全局状态
+// ========================================================
+let currentScenario = null;
+let currentSceneId = null;
+let currentStateKey = 's0';
+let turnCount = 0;
+let userResponses = [];
+let isWaiting = false;
+let scenarioEnded = false;
+
+// ========================================================
+//  开始场景
+// ========================================================
+function startScenario(id) {
+  currentScenario = SCENE_MAP[id];
+  currentSceneId = id;
+  currentStateKey = 's0';
+  turnCount = 0;
+  userResponses = [];
+  isWaiting = false;
+  scenarioEnded = false;
+
+  document.getElementById('sim-selector').classList.add('hide');
+  document.getElementById('sim-chat').classList.remove('hide');
+  document.getElementById('score-panel').classList.add('hide');
+  document.getElementById('sim-title').textContent = currentScenario.title;
+  document.getElementById('sim-subtitle').textContent = currentScenario.subtitle;
+  document.getElementById('sim-avatar').textContent = currentScenario.avatar;
+  document.getElementById('user-input').disabled = false;
+  document.querySelector('#sim-chat .btn-primary').disabled = false;
+
+  const chatArea = document.getElementById('chat-area');
+  chatArea.innerHTML = '';
+
+  addBubble('system', currentScenario.openerContext);
+  renderQuickReplies(currentScenario.quickReplies);
+
+  setTimeout(() => {
+    addBubble('customer', currentScenario.openerMsg, currentScenario.avatar + ' 顾客');
+  }, 400);
+}
+
+// ========================================================
+//  发送消息 & 状态机驱动
+// ========================================================
+function sendMessage() {
+  if (isWaiting || scenarioEnded) return;
+  const input = document.getElementById('user-input');
+  const text = input.value.trim();
+  if (!text) return;
+
+  input.value = '';
+  document.getElementById('quick-replies').innerHTML = '';
+
+  addBubble('staff', text, '👔 你（员工）');
+  userResponses.push(text);
+  turnCount++;
+
+  // 获取当前状态节点
+  const states = currentScenario.states;
+  const state = states[currentStateKey];
+  if (!state) return;
+
+  // 计算下一个状态
+  const nextKey = state.check(text);
+  currentStateKey = nextKey;
+  const nextState = states[nextKey];
+  if (!nextState) return;
+
+  isWaiting = true;
+  addTyping();
+
+  // 模拟顾客"打字"延迟
+  const delay = 900 + Math.floor(Math.random() * 600);
+  setTimeout(() => {
+    removeTyping();
+    isWaiting = false;
+
+    if (nextState.isEnd) {
+      // ---- 结局 ----
+      scenarioEnded = true;
+      document.getElementById('user-input').disabled = true;
+      document.querySelector('#sim-chat .btn-primary').disabled = true;
+      document.getElementById('quick-replies').innerHTML = '';
+
+      const outcomeEmoji = { success:'🎉', ok:'✅', fail:'😞' };
+      const emoji = outcomeEmoji[nextState.outcome] || '🔚';
+      addBubble('system', emoji + ' ' + nextState.endMsg);
+      setTimeout(() => generateScore(nextState.outcome), 600);
+
+    } else {
+      // ---- 顾客继续回应 ----
+      const replyPool = nextState.replies || ['嗯……', '哦。', '好吧。'];
+      const reply = replyPool[Math.floor(Math.random() * replyPool.length)];
+      addBubble('customer', reply, currentScenario.avatar + ' 顾客');
+
+      // 教练提示
+      if (nextState.coach) {
+        setTimeout(() => addBubble('coach', nextState.coach), 600);
+      }
+
+      // 根据新状态给出快速回复建议
+      const suggestions = getQuickSuggestions(nextKey, currentSceneId);
+      if (suggestions.length > 0) {
+        setTimeout(() => renderQuickReplies(suggestions), 700);
+      }
+    }
+  }, delay);
+}
+
+// ========================================================
+//  各状态对应的快速回复建议
+// ========================================================
+function getQuickSuggestions(stateKey, sceneId) {
+  const map = {
+    A: {
+      s1_good:   ['这是新疆阳光玫瑰，皮薄无核，有玫瑰花香，不酸不涩', '这葡萄甜度很高，糖度18度以上，直接整颗吃很方便', '今天刚到的，很多老顾客一来就拿，你尝一颗就知道了'],
+      s1_cold:   ['姐，今天刚到的葡萄是新疆直采的，甜度特别高，尝一颗吗？', '您要不要看看今天的桃子？今早刚到，按下去软的就熟透了，很甜', '今天西瓜超甜，我帮您切一块尝尝？'],
+      s2_intro_good: ['您买了葡萄，要不要搭点猕猴桃？葡萄补铁猕猴桃补VC，一起吃吸收更好', '拿一斤葡萄，再来一盒蓝莓？颜色漂亮，很多顾客都这样搭', '家里几口人？我帮您搭个适合全家的组合'],
+      s2_intro_weak: ['您说得对，光说甜没说服力。这是新疆直采，比普通葡萄甜度高5度以上，皮薄无核', '超市的葡萄运输时间久，我们的是产地直发，早上到货，您感受得出来差别', '您先尝一颗，不甜不用买，对吧？'],
+      s3_combo:  ['猕猴桃今天28块两斤，和葡萄一起吃营养好', '蓝莓一盒35，草莓蓝莓葡萄三种一起放果盘，颜色漂亮招待客人特别好看', '帮您搭一个家庭装：葡萄两斤 + 猕猴桃两斤，营养均衡'],
+      s3_nocombo: ['好的，帮您称。这葡萄1斤装好，我给您拿个袋子', '好，给您称，需要我帮您装袋子吗？', '好的，葡萄1斤，XX元，扫码还是现金？'],
+    },
+    B: {
+      s1_acknowledge: ['大妈，这是新疆阳光玫瑰，18块那家一般是普通葡萄，品种不一样', '我们是产地直采，新鲜度比超市多2-3天，甜度能高不少，您先尝一颗对比一下', '价格差在产地和品种上，您尝了就知道差别了'],
+      s1_vague:  ['大妈不好意思，我重新说清楚——这个是新疆直采，运过来只花了2天，超市要5天以上', '您看这颜色，深紫的是熟透了，甜度在18度以上，旁边那家18块的一般是13-14度', '您先尝一颗，甜不甜一口就知道，不甜您走人我不拦'],
+      s2_detail_good: ['大妈，您尝完觉得怎么样？要不先来两斤试试？', '甜对吧！要几斤？我帮您装好，今天货新鲜', '大妈，您常住这附近吗？我们每周三五新货，我给您留着'],
+      s2_detail_weak: ['大妈，这样吧，您先尝一颗，真的不甜就不用买，我不骗您', '您去别家对比过再回来，如果甜度差别大您也能看出来', '大妈，我理解您，但您先尝一颗，一秒就知道值不值'],
+      s2_recover: ['大妈刚才没解释清楚，对不起。这是新疆直采的，价格贵在产地和新鲜度上', '不好意思刚才态度不好，这葡萄是阳光玫瑰品种，比普通葡萄甜度高很多', '大妈，我来重新给您介绍，您先别走'],
+      s3_taste_close: ['好！大妈，给您来两斤？还是三斤？', '给您装袋子，今天货特别新鲜', '大妈，我帮您称，您常来的话我可以给您留新货'],
+      s3_taste_hesitate: ['大妈，一斤也行，您回去给家里人尝尝', '一斤的话XX元，扫码还是现金？', '好，一斤，帮您装好。欢迎您下次再来！'],
+    },
+    C: {
+      s1_combo_attempt: ['蓝莓今天28一盒，草莓蓝莓一起吃VC很高，皮肤好', '猕猴桃只要15块，和草莓一起VC吸收好，经常吃对皮肤很好', '草莓和蓝莓颜色搭，拍照发朋友圈也好看，很多年轻人都这样买'],
+      s1_just_weigh:   ['对了，今天蓝莓也挺好的，草莓蓝莓一起VC高，加一盒吧', '顺手带个猕猴桃？和草莓搭着吃，营养更好', '今天蓝莓打折，买草莓的顾客很多顺手拿一盒'],
+      s2_reason_weak:  ['好的没事！草莓XX元，扫码还是现金？', '好的，给您装袋子', '欢迎下次再来！我们三天两头有新货到'],
+      s3_checkout:     ['好，草莓XX元，扫码吧', '给您装好了，慢走！', '欢迎下次再来'],
+    },
+    D: {
+      s1_apologized: ['大姐，您上次买的是哪种橙子？我今天帮您换一袋新的，这次我亲自挑甜的', '大姐，这样吧，您今天来，我免费给您尝几瓣，甜了我就帮您换，不甜您随时找我', '大姐，我非常抱歉。今天我帮您再挑一袋，如果还不甜，退钱不二话'],
+      s1_excused: ['大姐对不起，不管什么原因，让您失望了是我们的问题，我道歉', '对不起，我刚才说话不对。您说得对，这是我们应该负责的', '大姐，真的对不起，我现在帮您想个解决方案'],
+      s1_cold:    ['大姐，真的非常对不起，让您这一趟来很失望', '对不起大姐，我们失职了，我来帮您解决', '大姐很抱歉，不甜真的是我们的失误，我来想办法'],
+      s2_remedy_good: ['好的，我现在帮您从今天的货里挑最甜的，我们新到的品种您试试', '大姐，这次的橙子是新批次，您先尝一瓣，满意了我帮您装', '大姐，欢迎您以后有问题随时来找我，我记住您了，下次我给您留最好的货'],
+      s2_remedy_weak: ['大姐，这样吧，今天您拿橙子，不甜退全款，我们做出承诺', '我帮您重新换一袋，当面挑，您来选', '大姐，给您补偿一盒小水果，还有今天的橙子我亲自帮您挑甜的'],
+      s3_win_back: ['大姐，我把您微信加一下，每次新鲜甜的橙子到了我通知您', '大姐，欢迎您以后常来，我记住您的口味了，甜的不酸的', '大姐，您这附近的老顾客对我们最重要，以后有问题随时来找我'],
+    }
+  };
+  return (map[sceneId] && map[sceneId][stateKey]) ? map[sceneId][stateKey] : [];
+}
+
+// ========================================================
+//  UI 工具函数
+// ========================================================
+function renderQuickReplies(replies) {
+  const container = document.getElementById('quick-replies');
+  container.innerHTML = '';
+  if (!replies || !replies.length) return;
+  replies.forEach(r => {
+    const btn = document.createElement('button');
+    btn.className = 'quick-reply';
+    btn.textContent = r;
+    btn.onclick = () => {
+      document.getElementById('user-input').value = r;
+      sendMessage();
+    };
+    container.appendChild(btn);
+  });
+}
+
+function addBubble(type, text, label) {
+  const chatArea = document.getElementById('chat-area');
+  const div = document.createElement('div');
+  if (type === 'system') {
+    div.className = 'chat-bubble bubble-system';
+    div.textContent = text;
+  } else if (type === 'customer') {
+    div.className = 'chat-bubble bubble-customer';
+    if (label) { const lbl = document.createElement('div'); lbl.className = 'bubble-label'; lbl.textContent = label; div.appendChild(lbl); }
+    div.appendChild(document.createTextNode(text));
+  } else if (type === 'staff') {
+    div.className = 'chat-bubble bubble-staff';
+    if (label) { const lbl = document.createElement('div'); lbl.className = 'bubble-label'; lbl.textContent = label; div.appendChild(lbl); }
+    div.appendChild(document.createTextNode(text));
+  } else if (type === 'coach') {
+    div.className = 'chat-bubble bubble-coach';
+    div.innerHTML = '💡 <strong>教练提示：</strong>' + text;
+  }
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+  return div;
+}
+
+function addTyping() {
+  const chatArea = document.getElementById('chat-area');
+  const div = document.createElement('div');
+  div.className = 'chat-bubble bubble-customer';
+  div.id = 'typing-indicator';
+  div.innerHTML = '<div class="typing"><span></span><span></span><span></span></div>';
+  chatArea.appendChild(div);
+  chatArea.scrollTop = chatArea.scrollHeight;
+}
+
+function removeTyping() {
+  const el = document.getElementById('typing-indicator');
+  if (el) el.remove();
+}
+
+function endScenario() {
+  if (scenarioEnded) return;
+  scenarioEnded = true;
+  document.getElementById('user-input').disabled = true;
+  document.getElementById('quick-replies').innerHTML = '';
+  addBubble('system', '🔚 手动结束演练 · 正在生成评分报告...');
+  setTimeout(() => generateScore('ok'), 600);
+}
+
+// ========================================================
+//  评分系统
+// ========================================================
+function generateScore(outcome) {
+  if (!currentScenario) return;
+  const criteria = currentScenario.evalCriteria;
+  const allText = userResponses.join(' ');
+
+  const keywords = {
+    '开场是否自然主动':     ['尝','今天','刚到','产地','甜','香','新鲜','推荐','姐','哥','妹'],
+    '产品介绍是否有卖点':   ['产地','甜度','口感','品种','新鲜','直采','特点','无核','花香','汁水'],
+    '是否尝试推荐搭配':     ['搭配','一起','猕猴桃','蓝莓','樱桃','营养','vc','维生素','还有','另外'],
+    '整体沟通是否友好':     ['姐','哥','大妈','妹','请','谢谢','好的','没问题','您'],
+    '是否承认价格差异而不回避': ['确实','是贵','原因','因为','差异','不同','明白'],
+    '是否说出具体价值差异点':   ['产地','新鲜','直采','品种','甜度','品质','度数','批次'],
+    '是否保持友好态度不争执':   ['理解','没关系','对不起','好的','当然','放心','您'],
+    '最终是否尝试促成购买':     ['尝','要不要','拿','带走','先来','几斤','帮您装'],
+    '是否完成基本结算服务':     ['多少','称','元','斤','给','好','帮您','扫码'],
+    '推荐理由是否有说服力':     ['营养','vc','维生素','搭配','好看','颜色','因为','适合','建议'],
+    '推荐是否自然不突兀':       ['顺便','对了','另外','还有','也','搭着','刚好'],
+    '是否第一时间真诚道歉':     ['对不起','抱歉','不好意思','失误','让您','遗憾'],
+    '是否避免找借口推卸':       allText.includes('不是我们') || allText.includes('供应商的') ? [] : ['是的','确实','我们','给您','帮您'],
+    '是否给出具体补救方案':     ['换','退','补偿','重新','今天','保证','免费','赠','挑'],
+    '是否尝试挽回顾客关系':     ['下次','以后','欢迎','留','联系','记住','常来','会员'],
+  };
+
+  // outcome bonus
+  const outcomeBonus = { success: 15, ok: 5, fail: -10 };
+  const bonus = outcomeBonus[outcome] || 0;
+
+  const scores = {};
+  let total = 0;
+  criteria.forEach(c => {
+    const kws = keywords[c] || [];
+    let matched = kws.filter(kw => allText.toLowerCase().includes(kw)).length;
+    const base = Math.min(95, 38 + matched * 13 + (userResponses.length >= 3 ? 8 : 0) + bonus);
+    const score = Math.min(100, Math.max(20, base + Math.floor(Math.random() * 8) - 4));
+    scores[c] = score;
+    total += score;
+  });
+  const avg = Math.round(total / criteria.length);
+
+  // Render grid
+  const panel = document.getElementById('score-panel');
+  const grid = document.getElementById('score-grid');
+  const feedbackEl = document.getElementById('score-feedback');
+  grid.innerHTML = '';
+
+  criteria.forEach(c => {
+    const s = scores[c];
+    const item = document.createElement('div');
+    item.className = 'score-item';
+    item.innerHTML = `<div class="score-label">${c}</div>
+      <div class="score-value">${s}<span style="font-size:13px;">分</span></div>
+      <div class="score-bar"><div class="score-fill" style="width:${s}%"></div></div>`;
+    grid.appendChild(item);
+  });
+
+  const overall = document.createElement('div');
+  overall.className = 'score-item';
+  overall.style.cssText = `grid-column:1/-1;background:${avg>=75?'rgba(165,214,167,0.25)':avg>=55?'rgba(255,213,79,0.25)':'rgba(239,154,154,0.25)'}`;
+  overall.innerHTML = `<div class="score-label">综合评分</div>
+    <div class="score-value" style="font-size:30px;">${avg}<span style="font-size:15px;">分</span></div>
+    <div class="score-bar"><div class="score-fill" style="width:${avg}%;background:${avg>=75?'#A5D6A7':avg>=55?'#FFD54F':'#EF9A9A'}"></div></div>`;
+  grid.appendChild(overall);
+
+  // Feedback text
+  const weak = criteria.filter(c => scores[c] < 65);
+  const strong = criteria.filter(c => scores[c] >= 80);
+  const tips = {
+    '开场是否自然主动': '下次试试：说具体品种+产地+口感词，再发出一个"要不要尝一颗"的小邀请',
+    '产品介绍是否有卖点': '记住FAB：特征→优势→顾客利益，每次推荐说出3个维度，别只说"甜"',
+    '是否尝试推荐搭配': '结账打包时顺口一提搭配品，"对了，今天的XX和这个很搭"——自然又有效',
+    '整体沟通是否友好': '多叫一声"姐/大妈/哥"，语气亲切，顾客更愿意停下来听你说',
+    '是否承认价格差异而不回避': '价格差异不要回避，直说"确实贵一点，因为……"反而更有说服力',
+    '是否说出具体价值差异点': '具体说产地、采购渠道、新鲜天数——细节比"质量好"更能打动人',
+    '是否保持友好态度不争执': '遇到挑剔顾客，先认同情绪："您说得对，这个价格确实高一些……"',
+    '最终是否尝试促成购买': '推荐完之后要有一个行动收尾："要不要拿一点尝尝？"或"帮您称几斤？"',
+    '是否完成基本结算服务': '基础服务要流畅，报价→称重→付款，一气呵成，顾客体验更好',
+    '推荐理由是否有说服力': '推荐时给理由：营养/颜值/场景，理由越具体顾客越愿意接受',
+    '推荐是否自然不突兀': '推荐时机：顾客刚决定买的一瞬间，或结账打包时，用"对了/顺便"过渡',
+    '是否第一时间真诚道歉': '投诉第一句永远是道歉，"让您失望了，非常抱歉"——先安抚情绪再解决问题',
+    '是否避免找借口推卸': '不管什么原因，都先承担责任，"不管什么原因，这是我们应该负责的"',
+    '是否给出具体补救方案': '道歉之后必须有方案：换货、退款、试吃保证，说一个明确的行动',
+    '是否尝试挽回顾客关系': '解决问题之后，留住顾客关系：邀请下次来，记住她的口味偏好',
+  };
+
+  let fb = '';
+  if (outcome === 'success') fb = `🌟 <strong>成交成功！</strong> 整体发挥很好，顾客被你说服了。`;
+  else if (outcome === 'ok') fb = `👍 <strong>基础成交，还有提升空间。</strong>`;
+  else fb = `💪 <strong>这次没有成功，但每次失败都是最好的练习材料。</strong> 重来一次，针对性地改进。`;
+
+  if (strong.length) fb += `<br><br>✅ <strong>做得好的地方：</strong>${strong.join('、')}`;
+  if (weak.length) {
+    fb += `<br><br>📌 <strong>重点改进：</strong><br>`;
+    weak.slice(0, 2).forEach(w => fb += `• <strong>${w}</strong>：${tips[w] || '多练几遍这个场景直到反应自然'}<br>`);
+  }
+  fb += `<br>🎯 <strong>建议：</strong> ${avg < 65 ? '这个场景再练2遍，专注改进上面的弱点。' : avg < 80 ? '再练一遍，争取冲到80分以上！' : '可以挑战下一个更难的场景了！'}`;
+
+  feedbackEl.innerHTML = fb;
+  panel.classList.remove('hide');
+  panel.scrollIntoView({ behavior: 'smooth' });
+}
+
+function retryScenario() {
+  document.getElementById('score-panel').classList.add('hide');
+  startScenario(currentSceneId);
+}
+
+function backToSelector() {
+  document.getElementById('sim-chat').classList.add('hide');
+  document.getElementById('sim-selector').classList.remove('hide');
+  currentScenario = null;
+  currentSceneId = null;
+}
+</script>
+
+</body>
+</html>
